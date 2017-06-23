@@ -1,6 +1,7 @@
 package com.codepath.flikster;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.codepath.flikster.models.Config;
 import com.codepath.flikster.models.Movie;
+
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 
@@ -30,6 +33,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     // context for rendering
     Context context;
+
 
     // initialize with list
     public MovieAdapter(ArrayList<Movie> movies) {
@@ -66,7 +70,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
         // build url for poster image
         String imageUrl = null;
-
         // if in portrait mode, load the poster image
         if (isPortrait) {
             imageUrl = config.getImageUrl(config.getPosterSize(), movie.getPosterPath());
@@ -94,11 +97,12 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
     }
 
     // create viewholder as static inner class
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // track view objects
         ImageView ivPosterImage;
         ImageView ivBackdropImage;
+
         TextView tvTitle;
         TextView tvOverview;
 
@@ -110,6 +114,31 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             tvOverview = (TextView) itemView.findViewById(R.id.tvOverview);
             tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
 
+            // add this as the itemView's OnClickListener
+            itemView.setOnClickListener(this);
+        }
+
+
+
+        @Override
+        public void onClick(View v) {
+            // gets item position
+            int position = getAdapterPosition();
+            // make sure position is valid, i.e. actually exists in the view
+            if (position != RecyclerView.NO_POSITION) {
+                // get the movie at the position - won't work if the class is static
+                Movie movie = movies.get(position);
+                // create intent for new activity
+                Intent intent = new Intent (context, MovieDetailsActivity.class);
+
+                String imageUrl = config.getImageUrl(config.getBackdropSize(), movie.getBackdropPath());
+                // serialize the movie using parceler, use its short name as a key
+                intent.putExtra(Movie.class.getSimpleName(), Parcels.wrap(movie));
+                intent.putExtra("imageUrl", imageUrl);
+
+                // show the activity
+                context.startActivity(intent);
+            }
         }
     }
 }
